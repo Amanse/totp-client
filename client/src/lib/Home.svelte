@@ -11,7 +11,7 @@ if(localStorage.getItem("token") == null) {
 }
 
 let token = localStorage.getItem("token")
-let data: Partial<Response> = {}
+let data: Partial<Response> = {"issuers": {}}
 let ifError = false
 let errorString = ""
 let loading = true

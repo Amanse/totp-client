@@ -2,22 +2,6 @@
 import axios from "axios";
 import type {Response} from "../Types"
 
-// interface Response {
-//     issuers: Issuer
-// }
-
-// interface Issuer {
-//     [name: string]: Accounts
-// }
-
-// interface Accounts {
-//     accounts: Account
-// }
-
-// interface Account {
-//     [name: string]: string
-// }
-
 let issuerN: string = ""
 let accountName: string = ""
 let secret: string = ""
@@ -27,16 +11,11 @@ let token = localStorage.getItem("token")
 export let fullData: Partial<Response>
 console.log(fullData)
 const handleAddSec = () => {
-    if(fullData == {}){
-            fullData["issuers"][issuerN] = {"accounts": {}}
-            fullData["issuers"][issuerN]["accounts"][accountName] = secret
-        }else {
-            if(fullData["issuers"][issuerN] != null) {
-                fullData["issuers"][issuerN]["accounts"][accountName] = secret
-            } else {
-                fullData["issuers"][issuerN] = {"accounts": {}}
-                fullData["issuers"][issuerN]["accounts"][accountName] = secret
-        }
+    if(fullData["issuers"][issuerN] == null) {
+        fullData["issuers"][issuerN] = {"accounts": {}}
+        fullData["issuers"][issuerN]["accounts"][accountName] = secret
+    } else {
+        fullData["issuers"][issuerN]["accounts"][accountName] = secret
     }
    
     let fis = fullData.issuers
