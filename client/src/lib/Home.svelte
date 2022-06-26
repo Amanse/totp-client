@@ -17,7 +17,7 @@ let errorString = ""
 let loading = true
 
 onMount(() => {
-    axios.get("http://localhost:8080/codes", {
+    axios.get("/codes", {
         headers: {
             "Authorization": ` Bearer ${token}`
         }

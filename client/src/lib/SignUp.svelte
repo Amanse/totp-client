@@ -21,7 +21,7 @@
         password = password.trim()
 
         try {
-            axios.post("http://localhost:8080/signup", {
+            axios.post("/signup", {
             username,
             password
         }).then(data => {

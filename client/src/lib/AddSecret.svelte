@@ -41,7 +41,7 @@ const handleAddSec = () => {
    
     let fis = fullData.issuers
     console.log(fullData.issuers)
-    axios.post("http://localhost:8080/codes", {issuers: fis}, {
+    axios.post("codes", {issuers: fis}, {
             headers: {
                 'Authorization': ` Bearer ${token}`
             }

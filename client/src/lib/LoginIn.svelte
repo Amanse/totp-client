@@ -20,7 +20,7 @@
         password = password.trim()
 
         try {
-            axios.post("http://localhost:8080/login", {
+            axios.post("/login", {
             username,
             password
         }).then(data => {

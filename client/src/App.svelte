@@ -1,9 +1,13 @@
 <script lang="ts">
+  import axios from 'axios'
   import { Router, Route, navigate } from "svelte-navigator";
   import SignUp from "./lib/SignUp.svelte";
   import "./index.css"
 import LoginIn from "./lib/LoginIn.svelte";
 import Home from "./lib/Home.svelte"
+import {SERVER_URL} from "./secrets"
+
+axios.defaults.baseURL = SERVER_URL
 
   let token = localStorage.getItem("token")
 </script>
