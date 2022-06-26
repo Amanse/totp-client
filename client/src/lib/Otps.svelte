@@ -1,20 +1,13 @@
 <script lang="ts">
 import totp from "totp-generator";
+import type {Accounts} from "../Types"
 
-interface Accounts {
-    accounts: AccountData
-}
-
-interface AccountData {
-    [accountN: string]: string 
-}
-
-let time;
+let time: number;
 
 setInterval(() =>handleTime(), 1000)
 
 const handleTime = () => {
-    time = (30 - Math.round(new Date() / 1000) % 30)
+    time = (30 - Math.round(new Date().valueOf() / 1000) % 30)
     if( time==30 ){
         accountData = accountData
     }

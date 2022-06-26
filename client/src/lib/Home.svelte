@@ -4,13 +4,16 @@ import {onMount} from 'svelte'
 import axios from 'axios';
 import AddSecret from './AddSecret.svelte';
 import Otps from './Otps.svelte';
+import type {Response} from "../Types"
 
 if(localStorage.getItem("token") == null) {
     navigate("/", {replace: true})
 }
 
 let token = localStorage.getItem("token")
-let data = {}
+let data: Partial<Response> = {}
+let ifError = false
+let errorString = ""
 let loading = true
 
 onMount(() => {
@@ -25,7 +28,8 @@ onMount(() => {
             if (err.response.status == 400) {
             console.log(err)
             if(err.response.data=="User has no secrets yet!") {
-                data="User has no secrets yet!"
+                errorString = err.response.data
+                ifError == true
             } else if (err.response.data=="User doesn't exist") {
                 localStorage.removeItem("token")
                 navigate("/login", {replace:true})
@@ -42,7 +46,10 @@ onMount(() => {
 <main class="flex flex-col items-center justify-center">
     <h1 class="text-5xl font-bold pb-6">Hello There</h1>
     <div class="flex flex-wrap">
-    {#if !loading}
+        {#if ifError}
+            {errorString}
+        {/if}
+    {#if !loading && !ifError}
         {#each Object.entries(data.issuers) as [issuerN, accounts] (issuerN)}
             <h2 class="text-xl text-bold">{issuerN}:</h2><br/>
             <Otps accountData={accounts} />

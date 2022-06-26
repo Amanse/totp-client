@@ -1,23 +1,22 @@
 <script lang="ts">
 import axios from "axios";
-import {onMount} from "svelte"
-import {secretData} from "../stores"
+import type {Response} from "../Types"
 
-interface Response {
-    issuers: Issuer
-}
+// interface Response {
+//     issuers: Issuer
+// }
 
-interface Issuer {
-    [name: string]: Accounts
-}
+// interface Issuer {
+//     [name: string]: Accounts
+// }
 
-interface Accounts {
-    accounts: Account
-}
+// interface Accounts {
+//     accounts: Account
+// }
 
-interface Account {
-    [name: string]: string
-}
+// interface Account {
+//     [name: string]: string
+// }
 
 let issuerN: string = ""
 let accountName: string = ""
@@ -25,9 +24,7 @@ let secret: string = ""
 
 let token = localStorage.getItem("token")
 
-let makeNew = false
-
-export let fullData
+export let fullData: Partial<Response>
 console.log(fullData)
 const handleAddSec = () => {
     if(fullData == {}){
