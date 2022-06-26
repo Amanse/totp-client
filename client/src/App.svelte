@@ -5,7 +5,7 @@
   import "./index.css"
 import LoginIn from "./lib/LoginIn.svelte";
 import Home from "./lib/Home.svelte"
-import {SERVER_URL} from "./secrets"
+import {SERVER_URL} from "../../secrets"
 
 axios.defaults.baseURL = SERVER_URL
 
