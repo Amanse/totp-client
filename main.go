@@ -7,12 +7,18 @@ import (
 	"github.com/go-redis/redis/v8"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/joho/godotenv"
+
 	jwtware "github.com/gofiber/jwt/v3"
 )
 
 func main() {
-	redisUrl := os.Getenv("REDIS_URL")
 	app := fiber.New()
+	err := godotenv.Load(".env")
+	if err != nil {
+		panic("No env file")
+	}
+	redisUrl := os.Getenv("REDIS_URL")
 
 	app.Use(cors.New())
 
