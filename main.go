@@ -1,6 +1,8 @@
 package main
 
 import (
+	"os"
+
 	"github.com/Amanse/totp-server/handlers"
 	"github.com/go-redis/redis/v8"
 	"github.com/gofiber/fiber/v2"
@@ -9,11 +11,12 @@ import (
 )
 
 func main() {
+	redisUrl := os.Getenv("REDIS_URL")
 	app := fiber.New()
 
 	app.Use(cors.New())
 
-	opt, err := redis.ParseURL("rediss://red-caosk8ns437i0d59co8g:xKAiNwq2Vq3aqjkC20p6nXBuVMWxLsPU@singapore-redis.render.com:6379")
+	opt, err := redis.ParseURL(redisUrl)
 
 	if err != nil {
 		panic(err)
