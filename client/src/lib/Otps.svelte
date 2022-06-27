@@ -25,9 +25,9 @@ export let accountData: Accounts;
 
 <main>
     {#each Object.entries(accountData.accounts) as [accountN, secret](accountN)}
-        <h5 class="text-xl px-4 text-secondary">{accountN}</h5>
+        <h5 class="text-xl text-secondary">{accountN}</h5>
         <div class="flex flex-row">
-            <p class="py-2 text-accent" on:click={() => copySecretToClip(secret)}>Secret: {totp(secret)}</p>
+        <p class="py-2 text-accent" on:click={() => copySecretToClip(secret)}>Secret: {totp(secret)}</p>
         </div>
         <span class="countdown">
             <span style="--value:{time};"></span>

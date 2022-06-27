@@ -64,14 +64,16 @@ const logout = () => {
           <li><button class="btn btn-sm btn-secondary" on:click={logout}>Logout</button></li>
         </ul>
       </div>
-    <div class="flex flex-wrap">
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-7">
         {#if ifError}
             {errorString}
         {/if}
     {#if !loading && !ifError}
         {#each Object.entries(data.issuers) as [issuerN, accounts] (issuerN)}
-            <h2 class="text-xl text-bold">{issuerN}:</h2><br/>
+        <div>
+            <h2 class="text-xl text-bold">{issuerN}:</h2>
             <Otps accountData={accounts} />
+        </div>
         {/each}
     {/if}
 </div>
