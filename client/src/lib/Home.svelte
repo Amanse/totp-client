@@ -5,6 +5,7 @@ import axios from 'axios';
 import AddSecret from './AddSecret.svelte';
 import Otps from './Otps.svelte';
 import type {Response} from "../Types"
+import {AllData} from "../stores"
 
 if(localStorage.getItem("token") == null) {
     navigate("/", {replace: true})
@@ -22,7 +23,11 @@ onMount(() => {
             "Authorization": ` Bearer ${token}`
         }
     })
-    .then(d => {data = d.data ;loading=false})
+    .then(d => {
+        data = d.data;
+        loading=false;
+        AllData.update(() => d.data)
+    })
     .catch(err => {
         if(err.response) {
             if (err.response.status == 400) {
@@ -41,10 +46,24 @@ onMount(() => {
         
     })
 })
+
+AllData.subscribe(v => data=v)
+
+const logout = () => {
+    localStorage.removeItem("token")
+    navigate("/login", {replace:true})
+}
 </script>
 
 <main class="flex flex-col items-center justify-center">
-    <h1 class="text-5xl font-bold pb-6">Hello There</h1>
+    <!-- <h1 class="text-5xl font-bold pb-6">Hello There</h1> -->
+    <div class="dropdown">
+        <!-- svelte-ignore a11y-label-has-associated-control -->
+        <label tabindex="0" class="btn text-5xl font-bold pb-6 m-1">Hello There</label>
+        <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52">
+          <li><button class="btn btn-sm btn-secondary" on:click={logout}>Logout</button></li>
+        </ul>
+      </div>
     <div class="flex flex-wrap">
         {#if ifError}
             {errorString}
@@ -57,6 +76,6 @@ onMount(() => {
     {/if}
 </div>
 <div class="py-6">
-    <AddSecret  fullData = {data}/>
+    <AddSecret/>
 </div>
 </main>

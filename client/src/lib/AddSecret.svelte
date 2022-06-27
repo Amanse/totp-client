@@ -1,6 +1,8 @@
 <script lang="ts">
 import axios from "axios";
 import type {Response} from "../Types"
+import {AllData} from "../stores"
+import {onMount} from "svelte"
 
 let issuerN: string = ""
 let accountName: string = ""
@@ -8,7 +10,7 @@ let secret: string = ""
 
 let token = localStorage.getItem("token")
 
-export let fullData: Partial<Response>
+let fullData: Partial<Response>
 console.log(fullData)
 const handleAddSec = () => {
     if(fullData["issuers"][issuerN] == null) {
@@ -25,10 +27,22 @@ const handleAddSec = () => {
                 'Authorization': ` Bearer ${token}`
             }
         }
-    ).then(data => console.log(`data is ${data}`))
+    ).then(() => {
+        AllData.update(() => fullData)
+    })
     .catch(err => console.log(err))
     console.log("Add")
 }
+
+const updateFullData = () => {
+    AllData.subscribe(v => {
+        fullData = v
+    })
+}
+
+onMount(() => {
+   updateFullData()
+})
 
 </script>
 
