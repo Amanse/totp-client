@@ -1,6 +1,6 @@
 <script lang="ts">
     import axios from 'axios';
-    import {Link} from 'svelte-navigator'
+    import {Link, navigate} from 'svelte-navigator'
     let username = "";
     let password = "";
 
@@ -28,6 +28,7 @@
             ifError = false
             errorString = ""
             ifSuccess = true
+            navigate("/", {replace: true})
         }).catch(error => {
             console.log(error.response.status)
             if(error.response.status == 400) {
