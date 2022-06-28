@@ -4,8 +4,6 @@ import type {Accounts} from "../Types"
 
 let time: number;
 
-let anotherDiv
-
 setInterval(() =>handleTime(), 1000)
 
 const handleTime = () => {
@@ -29,8 +27,6 @@ export let accountData: Accounts;
         <div class="flex flex-row">
         <p class="py-2 text-accent" on:click={() => copySecretToClip(secret)}>Secret: {totp(secret)}</p>
         </div>
-        <span class="countdown">
-            <span style="--value:{time};"></span>
-          </span>
     {/each}
+    
 </main>

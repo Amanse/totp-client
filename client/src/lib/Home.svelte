@@ -16,6 +16,7 @@ let data: Partial<Response> = {"issuers": {}}
 let ifError = false
 let errorString = ""
 let loading = true
+let time: number = 30 - Math.round(new Date().valueOf() / 1000) % 30
 
 onMount(() => {
     axios.get("/codes", {
@@ -47,6 +48,10 @@ onMount(() => {
     })
 })
 
+setInterval(() => time = (30 - Math.round(new Date().valueOf() / 1000) % 30)
+, 1000)
+
+
 AllData.subscribe(v => data=v)
 
 const logout = () => {
@@ -77,6 +82,11 @@ const logout = () => {
         {/each}
     {/if}
 </div>
+<!-- <span class="countdown">
+    <span style="--value:{time};"></span>
+  </span> -->
+  <progress class="progress progress-secondary w-56" value={time} max="30"></progress>
+
 <div class="py-6">
     <AddSecret/>
 </div>
