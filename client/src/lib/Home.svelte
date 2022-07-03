@@ -58,6 +58,34 @@ const logout = () => {
     localStorage.removeItem("token")
     navigate("/login", {replace:true})
 }
+
+const handleDelete = () => {
+    let accountToD = sessionStorage.getItem("accountToD")
+    let secretToD = sessionStorage.getItem("secretToD")
+    let issuerToD = sessionStorage.getItem("issuerToD")
+
+    console.log(`Delete ${accountToD} with ${secretToD} and ${issuerToD}`)
+    let accounts = data["issuers"][issuerToD]["accounts"]
+    delete accounts[accountToD]
+    let issuers = data["issuers"]
+
+    if (Object.keys(accounts).length === 0) {
+        console.log("should delete issuer")
+        delete issuers[issuerToD]
+        data["issuers"] = issuers
+        
+    } else {
+        data["issuers"][issuerToD]["accounts"] = accounts
+    }
+    console.log(data)
+
+    axios.post("codes", {issuers: data.issuers}, {
+        headers: {
+            'Authorization': ` Bearer ${token}`
+        }
+    })
+
+}
 </script>
 
 <main class="flex flex-col items-center justify-center">
@@ -76,8 +104,7 @@ const logout = () => {
     {#if !loading && !ifError}
         {#each Object.entries(data.issuers) as [issuerN, accounts] (issuerN)}
         <div>
-            <h2 class="text-xl text-bold">{issuerN}:</h2>
-            <Otps accountData={accounts} />
+            <Otps accountData={accounts} {issuerN} {handleDelete} />
         </div>
         {/each}
     {/if}
