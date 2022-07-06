@@ -40,6 +40,9 @@ onMount(() => {
                 localStorage.removeItem("token")
                 navigate("/login", {replace:true})
             }
+        } else if(err.response.status == 401) {
+            localStorage.removeItem("token")
+            navigate("/login", {replace: true})
         }
         } else {
             console.log(err)
