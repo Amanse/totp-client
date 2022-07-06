@@ -29,6 +29,9 @@ const handleAddSec = () => {
         }
     ).then(() => {
         AllData.update(() => fullData)
+        issuerN = ""
+        accountName = ""
+        secret = ""
     })
     .catch(err => console.log(err))
     console.log("Add")
