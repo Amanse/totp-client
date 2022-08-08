@@ -9,13 +9,12 @@ import {SERVER_URL} from "../../secrets"
 
 axios.defaults.baseURL = SERVER_URL
 
-  let token = localStorage.getItem("token")
 </script>
 
 <Router>
   <Route path="/">
     <Home />
-    {#if token==null}
+    {#if localStorage.getItem("token")==null}
     {navigate("/signup", {replace: true})}
     {/if}
   </Route>
