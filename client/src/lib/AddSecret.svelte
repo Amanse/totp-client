@@ -13,6 +13,7 @@ let token = localStorage.getItem("token")
 let fullData: Partial<Response>
 console.log(fullData)
 const handleAddSec = () => {
+    secret = secret.replace(/ /g,'')
     if(fullData["issuers"][issuerN] == null) {
         fullData["issuers"][issuerN] = {"accounts": {}}
         fullData["issuers"][issuerN]["accounts"][accountName] = secret
