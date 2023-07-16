@@ -2,6 +2,7 @@ import { component$, useSignal, $ } from "@builder.io/qwik"
 import { useNavigate } from "@builder.io/qwik-city";
 import { Client } from '@passwordlessdev/passwordless-client';
 import axios from "axios";
+import { sha256 } from "js-sha256";
 
 export default component$(() => {
     let username = useSignal("");
@@ -34,12 +35,10 @@ export default component$(() => {
 
 
     const login = $(() => {
-        username.value = username.value.trim()
-        password.value = password.value.trim()
         try {
             axios.post("http://localhost:8080/login", {
-                username: username.value,
-                password: password.value
+                username: username.value.trim(),
+                password: sha256(password.value.trim())
             }).then(data => {
                 localStorage.setItem("token", data.data.token)
                 ifError.value = false

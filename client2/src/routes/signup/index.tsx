@@ -2,6 +2,7 @@ import { component$, useSignal, $ } from '@builder.io/qwik';
 import { useNavigate } from '@builder.io/qwik-city';
 import axios from 'axios';
 import { Client } from '@passwordlessdev/passwordless-client';
+import { sha256 } from 'js-sha256';
 
 export default component$(() => {
     let username = useSignal("");
@@ -34,7 +35,7 @@ export default component$(() => {
 
     const signUp = $(() => {
         username.value = username.value.trim()
-        password.value = password.value.trim()
+        password.value = sha256(password.value.trim())
         try {
             axios.post("http://localhost:8080/signup", {
                 username: username.value,
