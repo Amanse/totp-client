@@ -1,5 +1,6 @@
-import {component$, useSignal, $} from "@builder.io/qwik"
+import { component$, useSignal, $ } from "@builder.io/qwik"
 import { useNavigate } from "@builder.io/qwik-city";
+import { Client } from '@passwordlessdev/passwordless-client';
 import axios from "axios";
 
 export default component$(() => {
@@ -10,40 +11,62 @@ export default component$(() => {
 
     const nav = useNavigate();
 
+    const loginWithPasskey = $(() => {
+        const p = new Client({
+            apiKey: "totp:public:4f46665f2e6a41f3abdbdae8ef539114"
+        });
+
+        p.signinWithId(username.value).then(({ token, error }) => {
+            if (error) {
+                console.log(error)
+                return
+            }
+
+            axios.post("http://localhost:8080/login/passkey", { token }).then(data => {
+                localStorage.setItem("token", data.data.token)
+                ifError.value = false
+                errorString.value = ""
+                nav("/")
+            })
+        });
+
+    })
+
 
     const login = $(() => {
-       username.value = username.value.trim() 
-       password.value = password.value.trim() 
+        username.value = username.value.trim()
+        password.value = password.value.trim()
         try {
             axios.post("http://localhost:8080/login", {
-            username: username.value,
-            password: password.value
-        }).then(data => {
-            localStorage.setItem("token", data.data.token)
-            ifError.value = false
-            errorString.value = ""
-            nav("/")
-        }).catch(err => {
-          if (err.response.status == 400) {
-            errorString.value = err.response.data
-            ifError.value = true;
-          }
-        })
-        } catch(error) {
+                username: username.value,
+                password: password.value
+            }).then(data => {
+                localStorage.setItem("token", data.data.token)
+                ifError.value = false
+                errorString.value = ""
+                nav("/")
+            }).catch(err => {
+                if (err.response.status == 400) {
+                    errorString.value = err.response.data
+                    ifError.value = true;
+                }
+            })
+        } catch (error) {
             console.log(error)
-        }   
+        }
 
     })
     return (
-    <>
-        <input type="text" bind:value={username} placeholder='username' onInput$={(e) => (username.value = (e.target as HTMLInputElement).value)} />
-        <input type="text" bind:value={password} placeholder='password' onInput$={(e) => (password.value = (e.target as HTMLInputElement).value)} />
-        <button type="submit" onClick$={() => login()}>login</button>
-        {ifError && 
-            <>
-            {errorString}
-            </>
-        }
+        <>
+            <input type="text" bind: value={username} placeholder='username' onInput$={(e) => (username.value = (e.target as HTMLInputElement).value)} />
+            <input type="text" bind: value={password} placeholder='password' onInput$={(e) => (password.value = (e.target as HTMLInputElement).value)} />
+            <button type="submit" onClick$={() => login()}>login</button>
+            <button type="submit" onClick$={() => loginWithPasskey()}>login with passkey</button>
+            {ifError &&
+                <>
+                    {errorString}
+                </>
+            }
         </>
     )
 })

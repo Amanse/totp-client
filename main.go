@@ -37,6 +37,7 @@ func main() {
 	// Allowed routes
 	//Signup user, takes username and password in JSON
 	app.Post("/signup", ah.SignUpRedis)
+	app.Post("/login/passkey", ah.LoginPasskey)
 	app.Post("/login", ah.LoginRedis)
 
 	app.Use(jwtware.New(jwtware.Config{

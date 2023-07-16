@@ -1,10 +1,13 @@
 package handlers
 
 import (
+	"bytes"
 	"context"
 	"crypto/sha256"
+	"encoding/json"
 	"fmt"
 	"log"
+	"net/http"
 	"time"
 
 	"github.com/go-redis/redis/v8"
@@ -19,6 +22,15 @@ type AuthHandler struct {
 type UserData struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
+}
+
+type TokenResponse struct {
+	Token string `json:"token"`
+}
+
+type TokenSignIn struct {
+	Success bool   `json:"success"`
+	UserId  string `json:"userId"`
 }
 
 func NewAuthHand(db *redis.Client) *AuthHandler {
@@ -49,6 +61,18 @@ func (ah *AuthHandler) SignUpRedis(c *fiber.Ctx) error {
 		return fiber.NewError(400, "User already exists")
 	}
 
+	passKey := c.Query("isPasskey")
+	if passKey == "1" {
+		token, err := ah.signUpPasskey(u.Username)
+		if err != nil {
+			return fiber.NewError(500, "Failed to get passkey token")
+		}
+		hPasswdS := time.Now().String()
+		ah.db.Set(ctx, userDbS, hPasswdS, 0)
+
+		return c.JSON(fiber.Map{"token": token})
+	}
+
 	//Hashing the password
 	hPasswd := sha256.Sum256([]byte(u.Password))
 
@@ -69,6 +93,75 @@ func (ah *AuthHandler) SignUpRedis(c *fiber.Ctx) error {
 	}
 
 	return c.JSON(fiber.Map{"token": t})
+}
+
+func (ah *AuthHandler) signUpPasskey(userName string) (string, error) {
+	log.Println("passkey request")
+	postBody, _ := json.Marshal(map[string]string{
+		"userId":   userName,
+		"username": userName,
+	})
+
+	responseBody := bytes.NewBuffer(postBody)
+	req, err := http.NewRequest("POST", "https://v4.passwordless.dev/register/token", responseBody)
+	if err != nil {
+		return "", err
+	}
+	req.Header.Add("ApiSecret", "totp:secret:98219982f6e140bb8b8a9299aeb81bca")
+	req.Header.Add("Content-Type", "application/json")
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return "", err
+	}
+	target := new(TokenResponse)
+	json.NewDecoder(resp.Body).Decode(target)
+
+	return target.Token, nil
+}
+
+func (ah *AuthHandler) LoginPasskey(c *fiber.Ctx) error {
+	log.Println("login passkey")
+	u := new(TokenResponse)
+	if err := c.BodyParser(u); err != nil {
+		return err
+	}
+
+	postBody, _ := json.Marshal(map[string]string{
+		"token": u.Token,
+	})
+
+	responseBody := bytes.NewBuffer(postBody)
+	req, err := http.NewRequest("POST", "https://v4.passwordless.dev/signin/verify", responseBody)
+	if err != nil {
+		return fiber.NewError(500, "Could not make req")
+	}
+	req.Header.Add("ApiSecret", "totp:secret:98219982f6e140bb8b8a9299aeb81bca")
+	req.Header.Add("Content-Type", "application/json")
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return fiber.NewError(400, "failure to make request")
+	}
+	target := new(TokenSignIn)
+	json.NewDecoder(resp.Body).Decode(target)
+
+	if target.Success {
+		claims := jwt.MapClaims{
+			"username": target.UserId,
+			"exp":      time.Now().Add(time.Hour * 72).Unix(),
+		}
+
+		token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+
+		t, err := token.SignedString([]byte("pride"))
+		if err != nil {
+			c.SendStatus(fiber.StatusInternalServerError)
+		}
+
+		return c.JSON(fiber.Map{"token": t})
+	}
+
+	return fiber.NewError(400, "Not success login")
+
 }
 
 func (ah *AuthHandler) LoginRedis(c *fiber.Ctx) error {
