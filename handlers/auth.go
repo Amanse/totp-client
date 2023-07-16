@@ -37,6 +37,55 @@ func NewAuthHand(db *redis.Client) *AuthHandler {
 	return &AuthHandler{db}
 }
 
+func (ah *AuthHandler) checkUserExists(username string, ctx context.Context) (bool, error) {
+	userDbS := fmt.Sprintf("users.%s", username)
+
+	ifExists, err := ah.db.Exists(ctx, userDbS).Result()
+
+	if err != nil {
+		log.Println(err)
+		return false, err
+	}
+
+	if ifExists == 1 {
+		return true, nil
+	}
+	return false, nil
+
+}
+
+func (ah *AuthHandler) SignUpPasskey(c *fiber.Ctx) error {
+	log.Println("SignupRequest")
+
+	u := new(UserData)
+	if err := c.BodyParser(u); err != nil {
+		return err
+	}
+
+	ctx := context.Background()
+
+	ifExists, err := ah.checkUserExists(u.Username, ctx)
+	if err != nil {
+		return c.JSON(fiber.Map{"error": err})
+
+	}
+	if ifExists {
+		return fiber.NewError(400, "User already exists")
+	}
+
+	userDbS := fmt.Sprintf("users.%s", u.Username)
+
+	token, err := ah.signUpPasskey(u.Username)
+	if err != nil {
+		return fiber.NewError(500, "Failed to get passkey token")
+	}
+	hPasswdS := time.Now().String()
+	ah.db.Set(ctx, userDbS, hPasswdS, 0)
+
+	return c.JSON(fiber.Map{"token": token})
+
+}
+
 func (ah *AuthHandler) SignUpRedis(c *fiber.Ctx) error {
 	log.Println("SignupRequest")
 
@@ -47,31 +96,16 @@ func (ah *AuthHandler) SignUpRedis(c *fiber.Ctx) error {
 
 	ctx := context.Background()
 
-	userDbS := fmt.Sprintf("users.%s", u.Username)
-
-	ifExists, err := ah.db.Exists(ctx, userDbS).Result()
-
+	ifExists, err := ah.checkUserExists(u.Username, ctx)
 	if err != nil {
-		log.Println(err)
 		return c.JSON(fiber.Map{"error": err})
-	}
 
-	if ifExists == 1 {
-		log.Println("User already exists")
+	}
+	if ifExists {
 		return fiber.NewError(400, "User already exists")
 	}
 
-	passKey := c.Query("isPasskey")
-	if passKey == "1" {
-		token, err := ah.signUpPasskey(u.Username)
-		if err != nil {
-			return fiber.NewError(500, "Failed to get passkey token")
-		}
-		hPasswdS := time.Now().String()
-		ah.db.Set(ctx, userDbS, hPasswdS, 0)
-
-		return c.JSON(fiber.Map{"token": token})
-	}
+	userDbS := fmt.Sprintf("users.%s", u.Username)
 
 	//Hashing the password
 	hPasswd := sha256.Sum256([]byte(u.Password))
@@ -174,13 +208,18 @@ func (ah *AuthHandler) LoginRedis(c *fiber.Ctx) error {
 
 	ctx := context.Background()
 
-	result, err := ah.db.Get(ctx, fmt.Sprintf("users.%s", u.Username)).Result()
+	ifExists, err := ah.checkUserExists(u.Username, ctx)
 
 	if err != nil {
-		if err == redis.Nil {
-			return fiber.NewError(400, "User not found")
-		}
+		return c.JSON(fiber.Map{"error": err})
+
 	}
+
+	if !ifExists {
+		return fiber.NewError(400, "User doesn't exists")
+	}
+
+	result, err := ah.db.Get(ctx, fmt.Sprintf("users.%s", u.Username)).Result()
 
 	hPasswd := sha256.Sum256([]byte(u.Password))
 	hPasswdS := fmt.Sprintf("%x", hPasswd)

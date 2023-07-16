@@ -16,10 +16,14 @@ export default component$(() => {
             apiKey: "totp:public:4f46665f2e6a41f3abdbdae8ef539114"
         });
 
-        axios.post("http://localhost:8080/signup?isPasskey=1", { username: username.value, password: "hehe" }).then(r => {
+        axios.post("http://localhost:8080/signup/passkey", { username: username.value, password: "hehe" }).then(r => {
             p.register(r.data.token).then(({ token, error }) => {
+                if (error) {
+                    console.log(error)
+                }
                 if (token) {
                     localStorage.setItem("token", token)
+                    nav("/login")
                 }
             });
 
